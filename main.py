@@ -6,6 +6,7 @@ import numpy as np
 from pettingzoo.mpe import simple_adversary_v2, simple_spread_v2, simple_tag_v2
 
 from MADDPG import MADDPG
+from tqdm import tqdm
 
 
 def get_env(env_name, ep_len=25):
@@ -63,7 +64,7 @@ if __name__ == '__main__':
     agent_num = env.num_agents
     # reward of each episode of each agent
     episode_rewards = {agent_id: np.zeros(args.episode_num) for agent_id in env.agents}
-    for episode in range(args.episode_num):
+    for episode in tqdm(range(args.episode_num)):
         obs = env.reset()
         agent_reward = {agent_id: 0 for agent_id in env.agents}  # agent reward of the current episode
         while env.agents:  # interact with the env for an episode
@@ -73,7 +74,7 @@ if __name__ == '__main__':
             else:
                 action = maddpg.select_action(obs)
 
-            next_obs, reward, done, info = env.step(action)
+            next_obs, reward, done, truncate, info = env.step(action)
             # env.render()
             maddpg.add(obs, action, reward, next_obs, done)
 
@@ -97,7 +98,7 @@ if __name__ == '__main__':
                 message += f'{agent_id}: {r:>4f}; '
                 sum_reward += r
             message += f'sum reward: {sum_reward}'
-            print(message)
+            # print(message)
 
     maddpg.save(episode_rewards)  # save model
 
