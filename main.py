@@ -53,12 +53,17 @@ if __name__ == '__main__':
     if not os.path.exists(env_dir):
         os.makedirs(env_dir)
     total_files = len([file for file in os.listdir(env_dir)])
-    result_dir = os.path.join(env_dir, f'{total_files + 1}')
+    result_dir = os.path.join(env_dir, f'{total_files + 1}/')
     os.makedirs(result_dir)
 
     env, dim_info = get_env(args.env_name, args.episode_length)
-    maddpg = MADDPG(dim_info, args.buffer_capacity, args.batch_size, args.actor_lr, args.critic_lr,
-                    result_dir)
+    # maddpg = MADDPG(dim_info, args.buffer_capacity, args.batch_size, args.actor_lr, args.critic_lr, result_dir)
+    maddpg = MADDPG.load(dim_info, args.buffer_capacity, args.batch_size, args.actor_lr, args.critic_lr, result_dir, True)
+    with open(os.path.join(result_dir, "hypers.txt"), 'x') as f:
+        print(args._get_kwargs())
+        for param, value in args._get_kwargs():
+            print(f"{param}: {value}")
+            f.write(f"{param}: {value} \n")
 
     step = 0  # global step counter
     agent_num = env.num_agents
@@ -75,6 +80,7 @@ if __name__ == '__main__':
                 action = maddpg.select_action(obs)
 
             next_obs, reward, done, truncate, info = env.step(action)
+            # print(action)
             # env.render()
             maddpg.add(obs, action, reward, next_obs, done)
 

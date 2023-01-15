@@ -131,10 +131,23 @@ class MADDPG:
             pickle.dump({'rewards': reward}, f)
 
     @classmethod
-    def load(cls, dim_info, file):
+    def load(cls, dim_info, buffer_capacity, batch_size, actor_lr, critic_lr, file, useBase):
         """init maddpg using the model saved in `file`"""
-        instance = cls(dim_info, 0, 0, 0, 0, os.path.dirname(file))
-        data = torch.load(file)
+        # print(f"load_os: {os.path.dirname(file)}")
+        # instance = cls(dim_info, 0, 0, 0, 0, os.path.dirname(file))
+        instance = cls(dim_info, buffer_capacity, batch_size, actor_lr, critic_lr, os.path.dirname(file))
+        if useBase:
+            data = torch.load('basemodel.pt')
+        else:
+            data = torch.load(file)
         for agent_id, agent in instance.agents.items():
             agent.actor.load_state_dict(data[agent_id])
         return instance
+
+    # def load(cls, dim_info, file):
+    #     """init maddpg using the model saved in `file`"""
+    #     instance = cls(dim_info, 0, 0, 0, 0, os.path.dirname(file))
+    #     data = torch.load(file)
+    #     for agent_id, agent in instance.agents.items():
+    #         agent.actor.load_state_dict(data[agent_id])
+    #     return instance
